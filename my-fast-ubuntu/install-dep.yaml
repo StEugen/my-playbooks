@@ -1,0 +1,63 @@
+---
+- name: Install all dependencies i need 
+  hosts: {{ host }}
+  gather_facts: no 
+  become: yes 
+
+  tasks:
+    - name: Update apt cache 
+      apt:
+        update_cache: yes
+
+    - name: Disable swap in fstab
+      replace:
+        path: /etc/fstab
+        regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
+        replace: '# \1'
+        
+    - name: Install ca certs etc...
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - gnupg-agent
+        - software-properties-common
+
+    - name: add Docker apt-key
+      get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker-apt-keyring.asc
+        mode: '0644'
+        force: true
+
+    - name: Docker repository
+      apt_repository:
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker-apt-keyring.asc] https://download.docker.com/linux/ubuntu jammy stable"
+        state: present 
+
+    - name: Install k3s
+      shell: 'curl -sfL https://get.k3s.io | sh -'
+
+
+    - name: Copy build LazyVim script 
+      copy:
+        src: ./scripts/neovim_08_build.sh
+        dest: /tmp/neovim_08_build.sh
+        mode: u=rwx,g=rx,o=rx
+
+    - name: Start build script 
+      shell: 'bash /tmp/neovim_08_build.sh'
+
+    - name: Copy VirtualBox install script 
+      copy:
+        src: ./scripts/install_vbox.sh
+        dest: /tmp/install_vbox.sh
+        mode: u=rwx,g=rx,o=rx
+
+    - name: Star VirtualBox install script
+      shell: 'bash /tmp/install_vbox.sh'
+
+
