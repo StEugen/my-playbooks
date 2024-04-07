@@ -1,0 +1,40 @@
+---
+- name: Start Netboot
+  hosts: '{{ host }}'
+  gather_facts: no 
+  become: yes
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Pull matchbox Docker image
+      docker_image:
+        name: ghcr.io/aenix-io/cozystack/matchbox:v0.2.0
+
+    - name: Start container
+      docker_container:
+        name: matchbox
+        image: ghcr.io/aenix-io/cozystack/matchbox:v0.2.0
+        state: started
+        detach: true
+        net: host
+        env:
+          ADDRESS: ":8000"
+          LISTEN: "debug"
+
+    - name: Pull dnsmasq image
+      docker_image:
+        name: quay.io/poseidon/dnsmasq
+
+    - name: Start dnsmasq
+      docker_container:
+        name: dnsmasq
+        image: quay.io/poseidon/dnsmasq
+        state: started
+        detach: true
+        net: host
+        command: >
+          --d -q -p0
+          --dhcp-range=
