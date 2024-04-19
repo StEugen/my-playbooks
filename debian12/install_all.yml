@@ -1,0 +1,81 @@
+---
+- name: Install dependencies for debian12
+  hosts: "{{ host }}"
+  gather_facts: no 
+  become: yes 
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Disable swap 
+      shell: |
+        swapoff -a
+
+    - name: Disable swap in fstab
+      replace:
+        path: /etc/fstab
+        regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
+        replace: '# \1'
+
+    - name: Install ca certs etc...
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - gnupg-agent
+        - software-properties-common
+
+    - name: add Docker apt-key
+      get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker-apt-keyring.asc
+        mode: '0644'
+        force: true
+
+    - name: Docker repository
+      apt_repository:
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker-apt-keyring.asc] https://download.docker.com/linux/ubuntu jammy stable"
+        state: present
+
+    - name: Update apt cache again
+      apt:
+        update_cache: yes 
+
+    - name: Install docker
+      shell: "sudo apt install docker-ce docker-ce-cli containerd.io -y" 
+
+    - name: Add kubernetes key
+      get_url:
+        url: https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key
+        dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
+        mode: '0644'
+        force: true
+
+    - name: Add kubernetes repo 
+      apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.asc] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /"
+        state: present
+        update_cache: yes
+
+
+    - name: Install kubelet
+      apt:
+        name: kubelet=1.29.*
+        state: present
+        update_cache: true
+
+    - name: Install kubeadm
+      apt:
+        name: kubeadm=1.29.*
+        state: present
+
+    - name: Install Ansible
+      apt:
+        name: ansible
+        state: present
+
