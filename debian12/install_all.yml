@@ -30,6 +30,7 @@
         - curl
         - gnupg-agent
         - software-properties-common
+        - vim 
 
     - name: add Docker apt-key
       get_url:

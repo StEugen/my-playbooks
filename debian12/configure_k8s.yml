@@ -1,0 +1,50 @@
+---
+- name: Configure k8s (with calico CNI)
+  hosts: "{{ host }}"
+  gather_facts: no 
+  become: yes 
+  remote_user: "{{ user }}"
+
+  tasks:
+    - name: Pre-configure
+      shell: |
+        sudo rm /etc/containerd/config.toml &&
+        sudo systemctl restart containerd
+      ignore_errors: yes 
+
+
+    - name: Pre-delete old k8s
+      shell: |
+        sudo rm -rf /var/lib/etcd &&
+        sudo rm -rf /var/lib/kubelet &&
+        sudo rm -rf /var/lib/cni &&
+        sudo rm -rf /var/run/kubernetes
+
+    - name: Init the cluster with cidr=192.168.0.0/16 
+      shell: "sudo kubeadm init --pod-network-cidr=192.168.0.0/16"
+
+    - name: create .kube directory
+      become: yes 
+      become_user: "{{ user }}"
+      file:
+        path: $HOME/.kube
+        state: directory
+        mode: 0755
+    
+    - name: copy admin.conf to user's kube config
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: $HOME/.kube/config
+        remote_src: yes
+        owner: "{{ user }}"
+
+    - name: Install calico CNI
+      become: yes
+      become_user: "{{ user }}"
+      shell: |
+        kubectl create -f https://docs.projectcalico.org/manifests/tigera-operator.yaml &&
+        kubectl create -f https://docs.projectcalico.org/manifests/custom-resources.yaml
+
+    - name: Remove taints for node (one-node cluster)
+      shell: kubectl taint nodes --all node-role.kubernetes.io/master-
+    
