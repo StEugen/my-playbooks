@@ -2,7 +2,8 @@
 - name: Install dependencies for debian12
   hosts: "{{ host }}"
   gather_facts: no 
-  become: yes 
+  become: yes
+  remote_user: "{{ user }}"
 
   tasks:
     - name: Update apt cache
@@ -78,4 +79,6 @@
       apt:
         name: ansible
         state: present
-
+    
+    - name: Download k9s deb package 
+      shell: "wget https://github.com/derailed/k9s/releases/download/v0.32.4/k9s_linux_amd64.deb"
