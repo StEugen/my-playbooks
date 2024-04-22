@@ -6,13 +6,20 @@
   remote_user: "{{ user }}"
 
   tasks:
-    - name: Pre-configure
-      shell: |
-        sudo rm /etc/containerd/config.toml &&
-        sudo systemctl restart containerd
-      ignore_errors: yes 
+    #- name: Pre-configure
+      # shell: |
+     #    sudo rm /etc/containerd/config.toml &&
+     #   sudo systemctl restart containerd
+      #ignore_errors: yes 
 
-
+    ## TODO: Add kernel modules configuration
+    #
+    ## TODO: Add containerd configuration
+    #
+    #
+    ## TODO: Add daemon.json 
+    #
+    #
     - name: Pre-delete old k8s
       shell: |
         sudo rm -rf /var/lib/etcd &&
@@ -34,17 +41,8 @@
     - name: copy admin.conf to user's kube config
       copy:
         src: /etc/kubernetes/admin.conf
-        dest: $HOME/.kube/config
+        dest: /home/{{ user }}/.kube/config
         remote_src: yes
         owner: "{{ user }}"
 
-    - name: Install calico CNI
-      become: yes
-      become_user: "{{ user }}"
-      shell: |
-        kubectl create -f https://docs.projectcalico.org/manifests/tigera-operator.yaml &&
-        kubectl create -f https://docs.projectcalico.org/manifests/custom-resources.yaml
-
-    - name: Remove taints for node (one-node cluster)
-      shell: kubectl taint nodes --all node-role.kubernetes.io/master-
     
