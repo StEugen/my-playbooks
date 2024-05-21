@@ -15,8 +15,17 @@
     ## TODO: Add kernel modules configuration
     #
     ## TODO: Add containerd configuration
-    #
-    #
+    - name: delete containerd conf
+      shell: |
+        sudo rm /etc/containerd/config.toml
+        sudo systemctl restart containerd
+
+    - name: create new containerd conf
+      shell: |
+        mkdir -p /etc/containerd
+        containerd config default | tee /etc/containerd/config.toml
+
+
     ## TODO: Add daemon.json 
     #
     #
@@ -29,20 +38,4 @@
 
     - name: Init the cluster with cidr=192.168.0.0/16 
       shell: "sudo kubeadm init --pod-network-cidr=192.168.0.0/16"
-
-    - name: create .kube directory
-      become: yes 
-      become_user: "{{ user }}"
-      file:
-        path: $HOME/.kube
-        state: directory
-        mode: 0755
-    
-    - name: copy admin.conf to user's kube config
-      copy:
-        src: /etc/kubernetes/admin.conf
-        dest: /home/{{ user }}/.kube/config
-        remote_src: yes
-        owner: "{{ user }}"
-
     
