@@ -8,13 +8,10 @@
   tasks:
 
     - name: Install calico CNI (tigera-operator)
-      shell: "kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.3/manifests/tigera-operator.yaml"
-      
-    - name: Install calico CNI (custom-resources)
-      shell: "curl https://raw.githubusercontent.com/projectcalico/calico/v3.27.3/manifests/custom-resources.yaml -O"
-    
-    - name: Create CNI (custom-resources)
-      shell: "kubectl apply -f custom-resources.yaml"
+      shell: "sudo kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.24.0/manifests/tigera-operator.yaml"
 
-    - name: Remove taints for node (one-node cluster)
-      shell: "kubectl taint nodes --all node-role.kubernetes.io/master-"
+    - name: Install calico CNI (custom-resources)
+      shell: "sudo kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.24.0/manifests/custom-resources.yaml"
+
+    - name: Remove taints
+      shell: "sudo kubectl taint nodes --all node-role.kubernetes.io/control-plane-"

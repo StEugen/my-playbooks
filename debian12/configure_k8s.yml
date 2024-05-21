@@ -1,41 +1,12 @@
 ---
-- name: Configure k8s (with calico CNI)
+- name: Init cluster
   hosts: "{{ host }}"
   gather_facts: no 
   become: yes 
   remote_user: "{{ user }}"
 
   tasks:
-    #- name: Pre-configure
-      # shell: |
-     #    sudo rm /etc/containerd/config.toml &&
-     #   sudo systemctl restart containerd
-      #ignore_errors: yes 
-
-    ## TODO: Add kernel modules configuration
-    #
-    ## TODO: Add containerd configuration
-    - name: delete containerd conf
-      shell: |
-        sudo rm /etc/containerd/config.toml
-        sudo systemctl restart containerd
-
-    - name: create new containerd conf
-      shell: |
-        mkdir -p /etc/containerd
-        containerd config default | tee /etc/containerd/config.toml
-
-
-    ## TODO: Add daemon.json 
-    #
-    #
-    - name: Pre-delete old k8s
-      shell: |
-        sudo rm -rf /var/lib/etcd &&
-        sudo rm -rf /var/lib/kubelet &&
-        sudo rm -rf /var/lib/cni &&
-        sudo rm -rf /var/run/kubernetes
-
-    - name: Init the cluster with cidr=192.168.0.0/16 
+    - name: Init cluster
       shell: "sudo kubeadm init --pod-network-cidr=192.168.0.0/16"
-    
+
+    # TODO: add kubectl get pods stdout print out to see if everything is ok

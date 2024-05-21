@@ -31,61 +31,17 @@
         - gnupg-agent
         - software-properties-common
         - vim 
+    
+    - name: copy install script
+      src: ./scripts/install_k8s.sh
+      dest: /tmp/install_k8s.sh
+      mode: u=rwx,g=rx,o=rx
 
-    - name: add Docker apt-key
-      get_url:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        dest: /etc/apt/keyrings/docker-apt-keyring.asc
-        mode: '0644'
-        force: true
-
-    - name: Docker repository
-      apt_repository:
-        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker-apt-keyring.asc] https://download.docker.com/linux/debian bookworm stable"
-        state: present
-
-    - name: Update apt cache again
-      apt:
-        update_cache: yes 
-
-    - name: Install docker
-      shell: "sudo apt install docker-ce docker-ce-cli containerd.io -y" 
-
-    #- name: Install containerd
-      #  shell: "sudo apt install containerd -y"
-
-    - name: Add kubernetes key
-      get_url:
-        url: https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key
-        dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
-        mode: '0644'
-        force: true
-
-    - name: Add kubernetes repo 
-      apt_repository:
-        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.asc] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /"
-        state: present
-        update_cache: yes
-
-
-    - name: Install kubelet
-      apt:
-        name: kubelet=1.29.*
-        state: present
-        update_cache: true
-
-    - name: Install kubeadm
-      apt:
-        name: kubeadm=1.29.*
-        state: present
-
-    - name: Install kubectl
-      apt:
-        name: kubectl=1.29.*
-        state: present
-
-    - name: Mark hold
-      shell: "sudo apt-mark hold kubelet kubeadm kubectl"
+    - name: install k8s, docke and containerd using shell script
+      shell: "/tmp/install_k8s.sh"
+      ignore_errors: true
+      async: 1200
+      poll: 10
 
     - name: Install Ansible
       apt:
