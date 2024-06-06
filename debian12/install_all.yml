@@ -33,9 +33,10 @@
         - vim 
     
     - name: copy install script
-      src: ./scripts/install_k8s.sh
-      dest: /tmp/install_k8s.sh
-      mode: u=rwx,g=rx,o=rx
+      copy:
+        src: ./scripts/install_k8s.sh
+        dest: /tmp/install_k8s.sh
+        mode: u=rwx,g=rx,o=rx
 
     - name: install k8s, docke and containerd using shell script
       shell: "/tmp/install_k8s.sh"
