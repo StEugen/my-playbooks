@@ -1,0 +1,44 @@
+---
+- name: Install VirtualBox 7.0 on Ubuntu 24.04
+  hosts: "{{ host }}"
+  become: true
+  tasks:
+
+    - name: Ensure apt cache is updated
+      apt:
+        update_cache: yes
+
+    - name: Install dependencies for VirtualBox
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - apt-transport-https
+        - ca-certificates
+        - gnupg
+        - software-properties-common
+
+    - name: Add Oracle VirtualBox GPG key
+      apt_key:
+        url: https://www.virtualbox.org/download/oracle_vbox_2016.asc
+        state: present
+
+    - name: Add VirtualBox 7.0 repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release }} contrib"
+        state: present
+        update_cache: yes
+
+    - name: Install VirtualBox 7.0
+      apt:
+        name: virtualbox-7.0
+        state: present
+
+    - name: Verify VirtualBox installation
+      command: virtualbox --help
+      register: virtualbox_check
+      ignore_errors: yes
+
+    - name: Output VirtualBox installation result
+      debug:
+        msg: "{{ virtualbox_check.stdout }}"
