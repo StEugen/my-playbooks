@@ -17,6 +17,9 @@
         - ca-certificates
         - gnupg
         - software-properties-common
+        
+    - name: Install dkms and headers
+      shell: "apt install -y linux-headers-$(uname-r) dkms"
 
     - name: Add Oracle VirtualBox GPG key
       apt_key:
