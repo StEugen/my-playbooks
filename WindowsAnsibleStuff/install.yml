@@ -1,0 +1,11 @@
+- name: Install software
+  
+  hosts: Windows_Host
+  tasks:
+      - name: install
+        win_package:
+        path: C:\path\to\thing\to\install.msi 
+        arguments: /quiet /norestart
+
+
+
